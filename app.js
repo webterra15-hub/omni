@@ -1,4 +1,4 @@
-/* Vidéo en masse — interface. Aucune donnée inventée : tout vient de /api/*. */
+/* Omni — interface. Aucune donnée inventée : tout vient de /api/*. */
 'use strict';
 
 const $ = (s, r = document) => r.querySelector(s);
