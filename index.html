@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vidéo en masse</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="logo"><b>V</b> Vidéo en masse</div>
+    <button class="nav on" data-vue="bord"><em>◧</em> Tableau de bord</button>
+    <button class="nav" data-vue="recherche"><em>⌕</em> Rechercher</button>
+    <button class="nav" data-vue="biblio"><em>▦</em> Bibliothèque</button>
+    <button class="nav" data-vue="reglages"><em>⚙</em> Réglages</button>
+    <div class="foot" id="rail-foot">chargement…</div>
+  </aside>
+
+  <main class="main">
+    <header class="top">
+      <input id="q" class="q" placeholder="chercher un sujet — ex. tableau blanc, bureau, ville" autocomplete="off">
+      <button id="go" class="chip">Chercher</button>
+    </header>
+
+    <section id="vue-bord" class="vue">
+      <div class="metrics" id="metrics"></div>
+      <div class="cols">
+        <div>
+          <div class="side" style="margin-bottom:14px"><h5>Et ensuite ?</h5><div id="suggestions"></div></div>
+          <h5>Dernier lot</h5>
+          <div class="gridvid" id="dernier"></div>
+        </div>
+        <div>
+          <div class="side"><h5>Sources utilisées</h5><div id="src-util"></div></div>
+          <div class="side" style="margin-top:14px"><h5>Dossier</h5>
+            <div id="dossier" class="small"></div>
+            <button id="ouvrir" class="chip ghost" style="margin-top:10px;width:100%;text-align:center">Ouvrir le dossier</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="vue-recherche" class="vue" hidden>
+      <div class="tabs">
+        <button class="tab on" data-mode="sujet">Par sujet</button>
+        <button class="tab" data-mode="lien">Par lien</button>
+      </div>
+
+      <div id="panneau-sujet">
+        <div class="filtres">
+          <select data-f="orientation"><option value="">Orientation</option>
+            <option value="paysage">Paysage</option><option value="portrait">Portrait</option></select>
+          <select data-f="duree_max"><option value="0">Durée</option>
+            <option value="10">moins de 10 s</option><option value="60">moins d'1 min</option>
+            <option value="300">moins de 5 min</option></select>
+          <select data-f="res_min"><option value="0">Résolution</option>
+            <option value="720">≥ 720p</option><option value="1080">≥ 1080p</option></select>
+          <label class="chk"><input type="checkbox" id="src-pixabay" checked> Pixabay</label>
+          <label class="chk"><input type="checkbox" id="src-coverr" checked> Coverr</label>
+          <label class="chk"><input type="checkbox" id="src-archive" checked> Archive</label>
+          <span class="grow"></span>
+          <span id="compte" class="compte">—</span>
+        </div>
+        <p id="erreurs" class="erreurs" hidden></p>
+        <div class="gridvid" id="resultats"></div>
+        <div class="vide" id="vide-recherche">Tape un sujet, puis Entrée. Les vignettes viennent des API.</div>
+      </div>
+
+      <div id="panneau-lien" hidden>
+        <p class="small muted" style="margin-bottom:8px">Colle une adresse YouTube (vidéo, playlist ou chaîne) ou TikTok.
+          Facebook et Instagram ne sont pas pris en charge.</p>
+        <div class="row">
+          <input id="lien-url" class="q" placeholder="https://www.youtube.com/watch?v=…  ou  https://www.youtube.com/@chaine">
+          <button id="lien-go" class="chip">Analyser</button>
+        </div>
+        <p id="lien-erreur" class="erreurs" hidden></p>
+        <h5 id="lien-titre" style="margin-top:18px;display:none"></h5>
+        <div class="liste" id="lien-liste"></div>
+      </div>
+    </section>
+
+    <section id="vue-biblio" class="vue" hidden>
+      <div class="filtres">
+        <input id="biblio-q" class="q" style="max-width:320px" placeholder="filtrer par titre, source, style…">
+        <select id="biblio-tri"><option value="recent">plus récentes</option>
+          <option value="titre">par titre</option><option value="taille">par taille</option></select>
+        <span class="grow"></span>
+        <span id="biblio-compte" class="compte">—</span>
+      </div>
+      <div class="gridvid" id="biblio-list"></div>
+      <p class="small muted" style="margin-top:16px">Dossier : <span id="biblio-dossier"></span> — journal.csv et credits.txt y sont écrits.</p>
+    </section>
+
+    <section id="vue-reglages" class="vue" hidden>
+      <h5>Dossier de destination</h5>
+      <div class="row"><input id="dossier-input" class="q" placeholder="C:\Users\...\Videos\video-masse">
+        <button id="dossier-save" class="chip ghost">Enregistrer</button></div>
+      <h5 style="margin-top:22px">Sources</h5>
+      <div id="src-etat" class="liste"></div>
+      <p class="small muted" style="margin-top:10px">Les clés vivent dans l'environnement, jamais dans le code.</p>
+    </section>
+  </main>
+</div>
+
+<div class="selbar" id="selbar" hidden>
+  <span><b id="sel-n">0</b> sélectionnée(s) · <span id="sel-ok">0</span> téléchargeable(s)</span>
+  <input id="style" class="stylein" placeholder="style (ex. b-roll bureau)">
+  <label class="chk"><input type="checkbox" id="droits"> J'ai le droit d'utiliser ces contenus</label>
+  <button id="dl" class="go">Télécharger</button>
+</div>
+
+<div class="player" id="player" hidden>
+  <div class="pbox">
+    <button class="pclose" id="pclose">✕</button>
+    <video id="pvideo" controls playsinline></video>
+    <div class="pmeta" id="pmeta"></div>
+  </div>
+</div>
+
+<div class="onb" id="onb" hidden>
+  <div class="onb-box">
+    <p class="eyebrow">Première ouverture — une seule fois</p>
+    <h2>Tu cherches des vidéos pour quoi ?</h2>
+    <p class="muted small" style="margin-bottom:16px">Ça règle les filtres par défaut et pondère les suggestions.
+      Rien n'est envoyé nulle part.</p>
+    <h5>Ton usage</h5>
+    <div class="onb-roles" id="onb-roles"></div>
+    <h5 style="margin-top:18px">Trois à cinq thèmes</h5>
+    <div class="onb-themes" id="onb-themes"></div>
+    <div class="row" style="margin-top:20px">
+      <button id="onb-go" class="chip">Commencer</button>
+      <button id="onb-skip" class="chip ghost">Plus tard</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
